@@ -19,13 +19,14 @@ def get_names():
 
 
     for stuff in celeb_elements:
-        input_array.append(stuff.text_content())
+        person = stuff.text_content()
+        if ('Usher' in person):
+            input_array.append(stuff.text_content() + ' Raymond')
+        else:
+            input_array.append(stuff.text_content())
+
 
     return input_array
-
-
-
-
 
 
 
