@@ -4,6 +4,9 @@ import flask
 from naive_similarity import compare_similarity
 import os
 import tempfile
+import base64
+from PIL import Image
+from io import BytesIO
 
 try:
     from flask.ext.cors import CORS # The typical way to import flask-cors
@@ -25,9 +28,11 @@ CORS(app, resources=r'/api/*', headers='Content-Type')
 @app.route('/api/similarity', methods=['POST'])
 def find_similar_images():
     prefix = request.url_root + 'images/'
-    if request.headers['Content-Type'] == 'application/octet-stream':
+    print(request.headers)
+    if request.headers['Content-Type'] == 'application/octet-stream; charset=UTF-8':
         f = tempfile.NamedTemporaryFile(delete=False)
-        f.write(request.data)
+        im = Image.open(BytesIO(base64.b64decode(request.data)))
+        im.save(os.path.abspath(f.name), 'JPEG')
         f.close()
         similarity = compare_similarity(os.path.abspath(f.name), prefix)
         return flask.jsonify(similarity)
