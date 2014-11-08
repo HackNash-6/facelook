@@ -4,9 +4,7 @@ import requests
 import GetNames
 
 
-SEED_PAGE = "http://www.people.com/people/celebrities/"
-
-NAMES_LIST = []
+NAMES_LIST = GetNames.get_names()
 
 
 def getPage(url):
@@ -16,6 +14,7 @@ def getPage(url):
     """
     r = requests.get(url)
     return r.text
+
 
 def get_html_lines(page):
     """
@@ -27,15 +26,17 @@ def get_html_lines(page):
     return lines
 
 
-
-
 def get_celeb_page(name):
     """
     :param name: (string) A celebrity name
     :return: (string) url of celeb's IMDB page
     """
     BASE_URL = "http://www.imdb.com/search/name?name="
+    BAD_LAST_NAMES = ['Knowles', 'Kardashian', 'Saldana', 'Dion', 'Cruz', 'Zellweger']
+    BAD_FIRST_NAMES = ['Gisele']
     name_list = name.split(' ')
+    if len(name_list) > 1 and (name_list[1] in BAD_LAST_NAMES or name_list[0] in BAD_FIRST_NAMES):
+        return None
     name_string = '%20'.join(name_list)
     search_result = BASE_URL + name_string
 
@@ -58,13 +59,14 @@ def test_get_celeb_page():
                   'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill'
                   ]
 
-    print('total number of celebs is: {}'.format(len(TEST_NAMES)))
+    print('total number of celebs is: {}'.format(len(names_list)))
 
 
 
     #celebs = [get_celeb_page(name) for name in TEST_NAMES]
-    for name in TEST_NAMES:
+    for name in names_list:
         print name, get_celeb_page(name)
 
-#print(getCelebPage('David Hasselhoff'))
-test_get_celeb_page()
+test_get_celeb_page(NAMES_LIST)
+
+
