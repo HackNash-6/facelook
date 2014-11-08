@@ -23,7 +23,7 @@ def get_names():
 
     return input_array
 
-print(get_names())
+
 
 
 
