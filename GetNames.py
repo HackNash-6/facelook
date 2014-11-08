@@ -4,7 +4,7 @@ import requests
 from lxml import html
 celeb_names = []
 
-def getNames(input_array):
+def get_names(input_array):
     #gets names from people.com
 
     allNames = requests.get('http://www.people.com/people/celebrities/')
