@@ -1,7 +1,9 @@
 __author__ = 'chrisgraff'
 
+import time
 import requests
 import GetNames
+import GetPicture
 
 
 NAMES_LIST = GetNames.get_names()
@@ -41,6 +43,8 @@ def get_celeb_page(name):
     search_result = BASE_URL + name_string
 
     search_result_page = getPage(search_result)
+    time.sleep(.4)
+    print('sleeping...after retrieving {}.'.format(name))
     start_pos = search_result_page.find('title="{}"'.format(name))
     error_pos = search_result_page.find('No results.')
     if error_pos != -1:
@@ -69,7 +73,9 @@ def test_get_celeb_page():
         print name, get_celeb_page(name)
 
 
+def deliver_links(celeb_list):
+    return {name: GetPicture.get_picture(get_celeb_page(name)) for name in celeb_list}
+
+print(deliver_links(NAMES_LIST))
 
 
-for name in NAMES_LIST[230:]:
-    print name, get_celeb_page(name)
