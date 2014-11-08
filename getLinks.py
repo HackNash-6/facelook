@@ -25,7 +25,7 @@ def getNames(page):
     return lines
 
 
-def getCelebPage(name):
+def get_celeb_page(name):
     """
     :param name: (string) A celebrity name
     :return: (string) url of celeb's IMDB page
@@ -45,4 +45,22 @@ def getCelebPage(name):
     return celebrity_page_link
 
 
-print (getCelebPage("Gwen Stefani"))
+def test_get_celeb_page():
+    TEST_NAMES = ['Ashton Kutcher', 'Gwen Stefani', 'Paul Rudd', 'David Hasselhoff',
+                  'Liv Tyler','Tiger Woods', 'Lucy Liu', 'Ryan Seacrest', 'Sally Field',
+                  'Tyra Banks', 'Vince Vaughn', 'Will Smith', 'Katy Perry', 'Kelly Ripa',
+                  'Emma Stone', 'Emma Roberts', 'Julia Roberts', 'Paris Hilton', 'Jon Hamm',
+                  'Bruce Willis', 'Brad Pitt', 'Angelina Jolie', 'George Clooney', 'Tim McGraw',
+                  'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill'
+                  ]
+
+    print('total number of celebs is: {}'.format(len(TEST_NAMES)))
+
+
+
+    #celebs = [get_celeb_page(name) for name in TEST_NAMES]
+    for name in TEST_NAMES:
+        print name, get_celeb_page(name)
+
+#print(getCelebPage('David Hasselhoff'))
+test_get_celeb_page()
