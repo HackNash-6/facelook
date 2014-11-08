@@ -1,11 +1,13 @@
 __author__ = 'chrisgraff'
 
 import requests
+import GetNames
 
 
 SEED_PAGE = "http://www.people.com/people/celebrities/"
 
-NAMES_LIST = ['Ashton Kutcher', 'Taylor Swift']
+NAMES_LIST = []
+
 
 def getPage(url):
     """
@@ -15,7 +17,7 @@ def getPage(url):
     r = requests.get(url)
     return r.text
 
-def getNames(page):
+def get_html_lines(page):
     """
     :param page: (string) html from getPage()
     :returns: (list) ['Adam Levine', 'Britney Spears', 'Christie Brinkley']
@@ -23,6 +25,8 @@ def getNames(page):
     result = []
     lines = page.split('\n')
     return lines
+
+
 
 
 def get_celeb_page(name):
