@@ -18,7 +18,7 @@ Team Members
 
 Instructions to Install vm:
 ========
-Make sure you have vagrant installed (https://www.vagrantup.com/downloads.html)
+Make sure you have vagrant (https://www.vagrantup.com/downloads.html) and virtualbox  (https://www.virtualbox.org/wiki/Downloads) installed
 
 * Create a directory ~/vagrant
 * cd ~/vagrant
