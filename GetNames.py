@@ -2,11 +2,10 @@ __author__ = 'Jack'
 
 import requests
 from lxml import html
-celeb_names = []
 
-def get_names(input_array):
+def get_names():
     #gets names from people.com
-
+    input_array = []
     allNames = requests.get('http://www.people.com/people/celebrities/')
     tree = html.fromstring(allNames.text)
 
@@ -21,6 +20,12 @@ def get_names(input_array):
 
     for stuff in celeb_elements:
         input_array.append(stuff.text_content())
+
+    return input_array
+
+
+
+
 
 
 
