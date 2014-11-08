@@ -32,7 +32,7 @@ def get_celeb_page(name):
     :return: (string) url of celeb's IMDB page
     """
     BASE_URL = "http://www.imdb.com/search/name?name="
-    BAD_LAST_NAMES = ['Knowles', 'Kardashian', 'Saldana', 'Dion', 'Cruz', 'Zellweger']
+    BAD_LAST_NAMES = ['Knowles', 'Kardashian', 'Saldana', 'Dion', 'Cruz', 'Zellweger', 'Minnillo']
     BAD_FIRST_NAMES = ['Gisele']
     name_list = name.split(' ')
     if len(name_list) > 1 and (name_list[1] in BAD_LAST_NAMES or name_list[0] in BAD_FIRST_NAMES):
@@ -64,10 +64,12 @@ def test_get_celeb_page():
 
 
 
-    #celebs = [get_celeb_page(name) for name in TEST_NAMES]
-    for name in TEST_NAMES:
+    celebs = [get_celeb_page(name) for name in TEST_NAMES]
+    for name in celebs:
         print name, get_celeb_page(name)
 
-test_get_celeb_page()
 
 
+
+for name in NAMES_LIST[230:]:
+    print name, get_celeb_page(name)
