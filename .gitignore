@@ -38,7 +38,7 @@ atlassian-ide-plugin.xml
 *.versionsBackup
 
 #python
-*.ipynb
+
 
 #C compile artifacts
 *.o
