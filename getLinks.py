@@ -56,17 +56,18 @@ def test_get_celeb_page():
                   'Tyra Banks', 'Vince Vaughn', 'Will Smith', 'Katy Perry', 'Kelly Ripa',
                   'Emma Stone', 'Emma Roberts', 'Julia Roberts', 'Paris Hilton', 'Jon Hamm',
                   'Bruce Willis', 'Brad Pitt', 'Angelina Jolie', 'George Clooney', 'Tim McGraw',
-                  'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill'
+                  'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill',
+
                   ]
 
-    print('total number of celebs is: {}'.format(len(names_list)))
+    print('total number of celebs is: {}'.format(len(TEST_NAMES)))
 
 
 
     #celebs = [get_celeb_page(name) for name in TEST_NAMES]
-    for name in names_list:
+    for name in TEST_NAMES:
         print name, get_celeb_page(name)
 
-test_get_celeb_page(NAMES_LIST)
+test_get_celeb_page()
 
 
