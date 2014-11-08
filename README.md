@@ -26,5 +26,9 @@ Make sure you have vagrant (https://www.vagrantup.com/downloads.html) and virtua
 * Download vm from this link:  https://www.dropbox.com/s/kgrei0t54f0b1g8/hacknash6.box?dl=0
 * Start the vm with the command:  vagrant up
 
+To login in and start ipython notebook:
+* login using the command:  vagrant ssh
+* once in, start the notebook with the script in the home directory:  bash ./ipython_notebook_start.sh
+* On your browser, enter the URL: http://localhost:8888
 
 
