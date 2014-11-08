@@ -15,3 +15,16 @@ Team Members
 * Geoffrey Gross (geoffreyrgross@gmail.com)
 * Kaili Liu (pybeebee@gmail.com)
 * John Liu (guard0g@gmail.com)
+
+Instructions to Install vm:
+========
+Make sure you have vagrant installed (https://www.vagrantup.com/downloads.html)
+
+* Create a directory ~/vagrant
+* cd ~/vagrant
+* Download Vagrantfile (into this directory)
+* Download vm from this link:  https://www.dropbox.com/s/kgrei0t54f0b1g8/hacknash6.box?dl=0
+* Start the vm with the command:  vagrant up
+
+
+
