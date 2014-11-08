@@ -4,11 +4,13 @@ from lxml import html
 
 
 def get_picture(URL):
-    allNames = requests.get(URL)
-    #print(allNames.text)
-    tree = html.fromstring(allNames.text)
+    if(URL is not None):
+        allNames = requests.get(URL)
+        #print(allNames.text)
+        tree = html.fromstring(allNames.text)
 
-    #get the pic
-    celeb_elements = tree.xpath('//img[@id = "name-poster"]/@src')
-    return celeb_elements
-
+        #get the pic
+        celeb_elements = tree.xpath('//img[@id = "name-poster"]/@src')
+        return celeb_elements
+    else:
+        return None
