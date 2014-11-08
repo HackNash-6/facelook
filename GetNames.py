@@ -22,7 +22,6 @@ def getNames(input_array):
     for stuff in celeb_elements:
         input_array.append(stuff.text_content())
 
-    print(input_array)
 
 
 
