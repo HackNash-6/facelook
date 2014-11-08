@@ -37,6 +37,9 @@ atlassian-ide-plugin.xml
 #maven
 *.versionsBackup
 
+#python
+*.ipynb
+
 #C compile artifacts
 *.o
 *.a
