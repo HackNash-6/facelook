@@ -1,16 +1,15 @@
+import os
+import tempfile
+import base64
+from PIL import Image
+from io import BytesIO
+
 from flask import Flask
 from flask import request
 import flask
-from naive_similarity import compare_similarity
+
 import rbm_similarity
-import eigen_similarity
-import os
-import itertools
-import tempfile
-import base64
-from operator import attrgetter
-from PIL import Image
-from io import BytesIO
+
 
 try:
     from flask.ext.cors import CORS  # The typical way to import flask-cors
@@ -42,20 +41,13 @@ def rbm_find_similar_images():
 
     if algorithm == 'rbm':
         matches = rbm_similarity.compare_similarity(os.path.abspath(f.name))
-
+    # elif algorithm == 'eigen':
+    #     #matches = eigen_similarity.compare_similarity(os.path.abspath(f.name), prefix)
     matches.sort(key=lambda match: match['score'], reverse=True)
-    return flask.jsonify(results=matches[:5])
+    for match in matches:
+        match['image'] = prefix + match['image']
+    return flask.jsonify(results=matches[:topn])
 
-
-@app.route('/api/eigen_similarity', methods=['POST'])
-def eigen_find_similar_images():
-    prefix = request.url_root + 'api/images/'
-    f = tempfile.NamedTemporaryFile(delete=False)
-    im = Image.open(BytesIO(base64.b64decode(request.data)))
-    im.save(os.path.abspath(f.name), 'JPEG')
-    f.close()
-    similarity = eigen_similarity.compare_similarity(os.path.abspath(f.name), prefix)
-    return flask.jsonify(similarity)
 
 @app.route('/api/images/<image_name>')
 def lookup_image(image_name=None):
