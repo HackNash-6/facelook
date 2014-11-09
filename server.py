@@ -3,6 +3,7 @@ from flask import request
 import flask
 from naive_similarity import compare_similarity
 import rbm_similarity
+import eigen_similarity
 import os
 import itertools
 import tempfile
@@ -45,6 +46,16 @@ def rbm_find_similar_images():
     matches.sort(key=lambda match: match['score'], reverse=True)
     return flask.jsonify(results=matches[:5])
 
+
+@app.route('/api/eigen_similarity', methods=['POST'])
+def eigen_find_similar_images():
+    prefix = request.url_root + 'api/images/'
+    f = tempfile.NamedTemporaryFile(delete=False)
+    im = Image.open(BytesIO(base64.b64decode(request.data)))
+    im.save(os.path.abspath(f.name), 'JPEG')
+    f.close()
+    similarity = eigen_similarity.compare_similarity(os.path.abspath(f.name), prefix)
+    return flask.jsonify(similarity)
 
 @app.route('/api/images/<image_name>')
 def lookup_image(image_name=None):
