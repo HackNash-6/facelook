@@ -10,56 +10,34 @@ import errno
 import shutil
 import itertools
 import requests
+
 from PIL import Image
-
 import numpy as np
-from numpy import average, linalg, dot
+from numpy import average, linalg, dot, mean
 import matplotlib.pyplot as plt
-
 from scipy.ndimage import convolve
+from scipy.spatial.distance import cosine
 from sklearn import linear_model, datasets, metrics
 from sklearn.cross_validation import train_test_split
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 
+model = None
 
 
-def compare_similarity(path):
-    largest_similarity = 0.0
-    matching_images = ()
+def compare_similarity(path, prefix):
+    return rbm_similarity(path)
 
-    image_comparison_dict = {
-        'similarity': largest_similarity,
-        'images': []
-    }
 
+def rbm_similarity(path):
+
+    images = []
     for f in os.listdir('images/'):
-        if path.split('/')[1] != f and f != '.DS_Store':
-            similarity = image_similarity_vectors_via_numpy(path, 'images/' + f)
-            if similarity > largest_similarity:
-                largest_similarity = similarity
-                matching_images = (f, similarity)
-                image_comparison_dict = {
-                    'similarity': largest_similarity,
-                    'images': matching_images
-                }
+        if f != '.DS_Store':
+            images.append((get_thumbnail(Image.open('images/{0}'.format(f))), f))
 
-    return image_comparison_dict
-
-def image_similarity_vectors_via_numpy(filepath1, filepath2):
-
-    image1 = Image.open(filepath1)
-    image2 = Image.open(filepath2)
-
-    image1 = get_thumbnail(image1)
-    image2 = get_thumbnail(image2)
-
-    greatest = 0.
-
-    images = [image1, image2]
     image_matrix = []
-    norms = []
-    for image in images:
+    for image, path in images:
         vectors = []
 
         for pixel_tuple in image.getdata():
@@ -69,71 +47,81 @@ def image_similarity_vectors_via_numpy(filepath1, filepath2):
             vectors.append(vec)
         image_matrix.append(vectors)
 
-    return res
+    if model is None:
+        train(image_matrix, images)
 
-def get_thumbnail(image, size=(30,30), greyscale=False):
+    scores = model['matrix']
+    sim = []
+    for i in xrange(len(scores)):
+        sim.append({
+            'score': 1. - cosine(scores[0].mean(0), scores[i].mean(0)),
+            'image': images[i][1]
+        })
+    print sim
+
+    return sim
+
+
+def get_thumbnail(image, size=(4, 4), greyscale=False):
     image = image.resize(size, Image.ANTIALIAS)
     if greyscale:
         image = image.convert('L')
     return image
 
 
-# In[210]:
-
-images = []
-for f in os.listdir('../facelook/images/'):
-    if f != '.DS_Store':
-        images.append((get_thumbnail(Image.open('../facelook/images/{0}'.format(f))), f))
-
-image_matrix = []
-for image, path in images:
-    vectors = []
-
-    for pixel_tuple in image.getdata():
-        vec = []
-        for val in pixel_tuple:
-            vec.append(float(val))
-        vectors.append(vec)
-    image_matrix.append(vectors)
+def eigenfaces(images, labels):
+    testing = []
+    tLabels = np.asarray(labels, dtype=np.int32)
+    #  for x in images:
+    #     testing.append(np.asarray(cv2.imread(x, cv2.IMREAD_GRAYSCALE), dtype=np.uint8))
+    model = cv2.createEigenFaceRecognizer()
+    #  model.train(testing, tLabels)
+    model.train(images, tLabels)
+    print model
+    return model
 
 
-# In[211]:
-
-X = np.asarray(image_matrix, 'float32')
-Y = np.array(X.shape)
-X = (X - np.min(X, 0)) / (np.max(X, 0) + 0.0001)  # 0-1 scaling
-
-
-# In[212]:
-
-rbm = BernoulliRBM(random_state=1, verbose=False)
-rbm.learning_rate = 0.09
-rbm.n_iter = 10
-rbm.n_components = 900
-rbm.batch_size = 2
-
-y_new = np.zeros(X.shape)
-for i in range(len(X)):
-    x_new = rbm.fit(X[i])
-    y_new[i] = x_new.components_
+def predict_face(model, image):
+    predicted_label = model.predict(image)
+    print predicted_label
+    return predicted_label
 
 
-# In[215]:
-
-from scipy.spatial.distance import cosine
-from numpy import mean
-
-maximum = (0, '')
-for i in xrange(len(y_new)):
-    sim = (1. - cosine(y_new[0].mean(0), y_new[i].mean(0)), images[i][1])
-    print sim
-    if sim[0] > maximum[0] and not sim[0] >= 1:
-        maximum = sim
-
-print maximum
+def detectFace(raw_image):
+    faceCascade = cv2.CascadeClassifier("./haarcascade_frontalface_default.xml")
+    faces = faceCascade.detectMultiScale(
+        raw_image,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30),
+        flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+    for (x, y, w, h) in faces:
+        new_image = cv2.resize(raw_image[y:y+h,x:x+w],(100,100))
+    return new_image
 
 
-# In[ ]:
+def train(image_matrix, images):
 
+    X = np.asarray(image_matrix, 'float32')
+    Y = np.array(X.shape)
+    X = (X - np.min(X, 0)) / (np.max(X, 0) + 0.0001)
 
+    rbm = BernoulliRBM(random_state=1, verbose=True)
+    rbm.learning_rate = 0.09
+    rbm.n_iter = 1
+    rbm.n_components = 16
+    rbm.batch_size = 2
 
+    y_new = np.zeros(X.shape)
+    for i in range(len(X)):
+        x_new = rbm.fit(X[i])
+        y_new[i] = x_new.components_
+
+    global model
+    model = {
+        'matrix': y_new,
+        'images': images
+    }
+
+if __name__ == '__main__':
+    compare_similarity('me.color.jpg', '')
