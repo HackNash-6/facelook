@@ -14,7 +14,7 @@ import requests
 from PIL import Image
 import numpy as np
 from numpy import average, linalg, dot, mean
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from scipy.ndimage import convolve
 from scipy.spatial.distance import cosine
 from sklearn import linear_model, datasets, metrics
@@ -25,7 +25,7 @@ from sklearn.pipeline import Pipeline
 model = None
 
 
-def compare_similarity(path, prefix):
+def compare_similarity(path):
     return rbm_similarity(path)
 
 
