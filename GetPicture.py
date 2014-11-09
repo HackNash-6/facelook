@@ -14,3 +14,4 @@ def get_picture(URL):
         return celeb_elements
     else:
         return None
+

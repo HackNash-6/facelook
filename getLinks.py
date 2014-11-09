@@ -2,6 +2,9 @@ __author__ = 'chrisgraff'
 
 import time
 import requests
+import json
+
+
 import GetNames
 import GetPicture
 
@@ -61,21 +64,32 @@ def test_get_celeb_page():
                   'Emma Stone', 'Emma Roberts', 'Julia Roberts', 'Paris Hilton', 'Jon Hamm',
                   'Bruce Willis', 'Brad Pitt', 'Angelina Jolie', 'George Clooney', 'Tim McGraw',
                   'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill',
-
                   ]
 
     print('total number of celebs is: {}'.format(len(TEST_NAMES)))
-
-
 
     celebs = [get_celeb_page(name) for name in TEST_NAMES]
     for name in celebs:
         print name, get_celeb_page(name)
 
 
-def deliver_links(celeb_list):
-    return {name: GetPicture.get_picture(get_celeb_page(name)) for name in celeb_list}
+def deliver_links():
+    """
+    :return: json file {'celeb_name': 'celeb_img_link'}
+    """
 
-print(deliver_links(NAMES_LIST))
+    links_dict = {name: GetPicture.get_picture(get_celeb_page(name)) for name in NAMES_LIST}
+
+    for k, v in links_dict.items():
+        if v == [] or v is None:
+            del links_dict[k]
+
+    with open('celeb_img_links.json', 'w') as outfile:
+        json.dump(links_dict, outfile, indent=4)
 
 
+
+
+
+
+deliver_links()
