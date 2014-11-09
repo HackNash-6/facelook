@@ -50,7 +50,9 @@ def rbm_find_similar_images():
         matches = fisher_similarity.compare_similarity(path)
     matches.sort(key=lambda match: match['score'], reverse=True)
     for match in matches:
+        name = match['image']
         match['image'] = prefix + match['image']
+        match['name'] = name.replace('.jpg','').replace('_',' ')
     return flask.jsonify(results=matches[:topn])
 
 
