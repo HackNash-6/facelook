@@ -46,7 +46,7 @@ def rbm_find_similar_images():
         matches = rbm_similarity.compare_similarity(path)
     elif algorithm == 'eigen':
         matches = eigen_similarity.compare_similarity(path)
-    elif algorithm == 'fischer':
+    elif algorithm == 'fisher':
         matches = fisher_similarity.compare_similarity(path)
     matches.sort(key=lambda match: match['score'], reverse=True)
     for match in matches:

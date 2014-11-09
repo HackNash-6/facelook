@@ -18,7 +18,7 @@ def fisher_similarity(path):
         testing_data.append(detectFace(x))
     df = to_pandas(images, testing_data, 'images/')
     #clean image
-    test_image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    test_image = detectFace(cv2.imread(path, cv2.IMREAD_GRAYSCALE))
     predictions = fisher_find_top_n_df(test_image, df, 5)
 
     biggest_weight = 0
@@ -28,8 +28,8 @@ def fisher_similarity(path):
     sim = []
     for x in predictions:
         sim.append({
-            'score': x[1]/biggest_weight,
-            'image': df['images'].ix[df['label'] == x[0]]
+            'score': 1 - x[1]/biggest_weight,
+            'image': df['images'].ix[df['labels'] == x[0]].values[0].replace('/','')
         })
     return sim
 
