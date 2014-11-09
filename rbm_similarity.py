@@ -31,30 +31,32 @@ def compare_similarity(path, prefix):
 
 def rbm_similarity(path):
 
-    images = []
-    for f in os.listdir('images/'):
-        if f != '.DS_Store':
-            images.append((get_thumbnail(Image.open('images/{0}'.format(f))), f))
-
-    image_matrix = []
-    for image, path in images:
-        vectors = []
-
-        for pixel_tuple in image.getdata():
-            vec = []
-            for val in pixel_tuple:
-                vec.append(float(val))
-            vectors.append(vec)
-        image_matrix.append(vectors)
-
     if model is None:
+        images = []
+        for f in os.listdir('images/'):
+            if f != '.DS_Store':
+                images.append((get_thumbnail(Image.open('images/{0}'.format(f))), f))
+
+        image_matrix = []
+        for image, path in images:
+            vectors = []
+
+            for pixel_tuple in image.getdata():
+                vec = []
+                for val in pixel_tuple:
+                    vec.append(float(val))
+                vectors.append(vec)
+            image_matrix.append(vectors)
+
+
         train(image_matrix, images)
 
     scores = model['matrix']
     sim = []
+    new_pred = train_new(path)
     for i in xrange(len(scores)):
         sim.append({
-            'score': 1. - cosine(scores[0].mean(0), scores[i].mean(0)),
+            'score': 1. - cosine(new_pred.mean(0), scores[i].mean(0)),
             'image': images[i][1]
         })
     print sim
@@ -98,6 +100,29 @@ def detectFace(raw_image):
     for (x, y, w, h) in faces:
         new_image = cv2.resize(raw_image[y:y+h,x:x+w],(100,100))
     return new_image
+
+def train_new(path):
+
+    thumbnail = get_thumbnail(Image.open('images/{0}'.format(path)))
+
+    vectors = []
+    for pixel_tuple in thumbnail.getdata():
+        vec = []
+        for val in pixel_tuple:
+            vec.append(float(val))
+        vectors.append(vec)
+
+    X = np.asarray(vectors, 'float32')
+    Y = np.array(X.shape)
+    X = (X - np.min(X, 0)) / (np.max(X, 0) + 0.0001)
+
+    rbm = BernoulliRBM(random_state=1, verbose=True)
+    rbm.learning_rate = 0.09
+    rbm.n_iter = 1
+    rbm.n_components = 16
+    rbm.batch_size = 2
+
+    return rbm.fit(X).components_
 
 
 def train(image_matrix, images):

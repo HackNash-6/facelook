@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 
 
+def compare_similarity(path, prefix):
+    pass
 
 def eigenfaces(images, labels):
     testing = []
@@ -117,48 +119,25 @@ def fisherfaces(images, labels):
     print model
     return model
 
-
-
-# In[80]:
-
 fisher_model = fisherfaces(train_set, xlabel)
 
-
-# In[81]:
-
 prediction = predict_face(fisher_model, train_set[1])
-
-
-# In[84]:
 
 my_fisher_face = predict_face(fisher_model, test_set[0])
 print my_fisher_face
 
-
-# In[86]:
-
 lookup_dic[my_fisher_face[0]]
-
-
-# In[88]:
 
 #### Testing someone who is already in the model.
 j = np.asarray(cv2.imread('jLawrenceTest.jpg', cv2.IMREAD_GRAYSCALE), dtype=np.uint8)
 test_j = detectFace(j)
 
-
-# In[92]:
-
-### Eigenfaces
 print 'Eigenfaces prediction:'
 eigen_prediction = predict_face(model, test_j)
 print lookup_dic[eigen_prediction[0]]
 print 'Fisher prediction:'
 fisher_prediction = predict_face(fisher_model, test_j)
 print lookup_dic[fisher_prediction[0]]
-
-
-# In[131]:
 
 def find_top_5(image, images, labels):
     eigen_training_images = images
@@ -187,15 +166,7 @@ def find_top_5(image, images, labels):
         print x
     return (eigen_predictions, fisher_predictions)
 
-
-
-
-# In[139]:
-
 import pandas
-
-
-# In[147]:
 
 clean_images = []
 for x in images:
@@ -203,18 +174,8 @@ for x in images:
     clean_images.append(rhs)
 d = {'imagesm': train_set, 'images': clean_images, 'labels': xlabel}
 
-
-# In[148]:
-
 df = pandas.DataFrame(data=d)
-
-
-# In[149]:
-
 df
-
-
-# In[163]:
 
 def eigen_find_top_5_df(image, dataframe):
     eigen_training_images = dataframe['imagesm']
@@ -246,20 +207,7 @@ def eigen_find_top_5_df(image, dataframe):
         #   print x
     return eigen_predictions
 
-
-
-# In[164]:
-
 e_p = eigen_find_top_5_df(test_j, df)
-
-
-# In[169]:
 
 for x in e_p:
     print df.ix[df['labels'] == x[0]]
-
-
-# In[ ]:
-
-
-
