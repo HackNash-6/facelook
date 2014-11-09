@@ -6,7 +6,7 @@ import numpy as np
 import pandas
 
 
-def compare_similarity(path, prefix):
+def compare_similarity(path):
     return fisher_similarity(path)
 
 

@@ -1,6 +1,8 @@
 import os
 import tempfile
 import base64
+import eigen_similarity
+import fisher_similarity
 from PIL import Image
 from io import BytesIO
 
@@ -39,10 +41,13 @@ def rbm_find_similar_images():
     f.close()
     matches = []
 
+    path = os.path.abspath(f.name)
     if algorithm == 'rbm':
-        matches = rbm_similarity.compare_similarity(os.path.abspath(f.name))
-    # elif algorithm == 'eigen':
-    #     #matches = eigen_similarity.compare_similarity(os.path.abspath(f.name), prefix)
+        matches = rbm_similarity.compare_similarity(path)
+    elif algorithm == 'eigen':
+        matches = eigen_similarity.compare_similarity(path)
+    elif algorithm == 'fischer':
+        matches = fisher_similarity.compare_similarity(path)
     matches.sort(key=lambda match: match['score'], reverse=True)
     for match in matches:
         match['image'] = prefix + match['image']
