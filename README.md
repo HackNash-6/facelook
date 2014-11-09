@@ -31,4 +31,6 @@ To login in and start ipython notebook:
 * once in, start the notebook with the script in the home directory:  bash ./ipython_notebook_start.sh
 * On your browser, enter the URL: http://localhost:8888
 
-
+REST server commands:
+========
+curl -H "Content-Type: application/octet-stream" -X POST host:port/similarity --data-binary @image.jpg
