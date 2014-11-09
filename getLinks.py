@@ -3,6 +3,7 @@ __author__ = 'chrisgraff'
 import time
 import requests
 import json
+import lxml
 
 
 import GetNames
@@ -19,16 +20,6 @@ def getPage(url):
     """
     r = requests.get(url)
     return r.text
-
-
-def get_html_lines(page):
-    """
-    :param page: (string) html from getPage()
-    :returns: (list) ['Adam Levine', 'Britney Spears', 'Christie Brinkley']
-    """
-    result = []
-    lines = page.split('\n')
-    return lines
 
 
 def get_celeb_page(name):
@@ -90,6 +81,5 @@ def deliver_links():
 
 
 
-
-
-deliver_links()
+if __name__ == '__main__':
+    deliver_links()
