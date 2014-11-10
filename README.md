@@ -1,14 +1,16 @@
-facelook
+CelebriME
 ========
 
-Find celebrities that most look like your photo
+##Tied for 2nd place at Hack Nashville 6
+
+###Find celebrities that most look like you
 
 Team Members
 * Chris Graffagnino (nashguitar1@gmail.com)
 * Jack Malpasuto (jackmalpo@gmail.com)
 * Bennet Littlejohn (bennettlittlejohn@gmail.com)
 * Tena Percy (tena.percy@gmail.com)
-* Marlee Stevensen (master26@gmail.com)
+* Marlee Stevensen (mastev26@gmail.com)
 * Stephen Bain (swbain@gmail.com)
 * David Gilmore (dagilmore91@gmail.com)
 * Mahesh Thundathil (mesh@fastmail.fm)
@@ -34,3 +36,15 @@ To login in and start ipython notebook:
 REST server commands:
 ========
 curl -H "Content-Type: application/octet-stream" -X POST host:port/similarity --data-binary @image.jpg
+
+Server Dependencies
+========
+python 2.7  
+opencv 2.4.9  
+numpy 1.9.0  
+scikit-learn 0.14.1  
+pandas 0.14.0  
+
+Launch Server Command
+========
+python server.py
