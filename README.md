@@ -1,7 +1,9 @@
-
-Tied for 2nd place at Hack Nashville 6
+CelebriME
 ========
-##CelebriME :Find celebrities that most look like you
+
+##Tied for 2nd place at Hack Nashville 6
+
+###Find celebrities that most look like you
 
 Team Members
 * Chris Graffagnino (nashguitar1@gmail.com)
