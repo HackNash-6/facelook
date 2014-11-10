@@ -36,3 +36,15 @@ To login in and start ipython notebook:
 REST server commands:
 ========
 curl -H "Content-Type: application/octet-stream" -X POST host:port/similarity --data-binary @image.jpg
+
+Server Dependencies
+========
+python 2.7
+opencv 2.4.9
+numpy 1.9.0
+scikit-learn 0.14.1
+pandas 0.14.0
+
+Launch Server Command
+========
+python server.py
