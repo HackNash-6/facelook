@@ -25,7 +25,7 @@ def get_photos(celeb_dict):
         celeb_name = '_'.join(key.lower().split(' ')) + '.jpg'
         photos_dict[key] = celeb_name
         subprocess.check_output(['wget', elem[0], '-O', './images/{}'.format(photos_dict[key])]) #download the file
-        time.sleep(.4)
+        time.sleep(.6)
         print('sleeping after downloading {}'.format(key))
 
 
