@@ -10,7 +10,7 @@ Team Members
 * Jack Malpasuto (jackmalpo@gmail.com)
 * Bennet Littlejohn (bennettlittlejohn@gmail.com)
 * Tena Percy (tena.percy@gmail.com)
-* Marlee Stevensen (master26@gmail.com)
+* Marlee Stevensen (mastev26@gmail.com)
 * Stephen Bain (swbain@gmail.com)
 * David Gilmore (dagilmore91@gmail.com)
 * Mahesh Thundathil (mesh@fastmail.fm)
