@@ -14,6 +14,7 @@ def get_links_from_json(json_file):
         data = json.load(json_data)
     return data
 
+
 def get_photos(celeb_dict):
     """
     :param celeb_dict: (dict) {'celeb name': ['url of celeb photo']}
@@ -24,8 +25,6 @@ def get_photos(celeb_dict):
         celeb_name = '_'.join(key.lower().split(' ')) + '.jpg'
         photos_dict[key] = celeb_name
         subprocess.check_output(['wget', elem[0], '-O', './images/{}'.format(photos_dict[key])]) #download the file
-        subprocess.call(['rm', elem[0].split('/')[-1]]) # jpg renamed/moved to images...deletes the original
-
         time.sleep(.4)
         print('sleeping after downloading {}'.format(key))
 
