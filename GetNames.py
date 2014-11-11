@@ -1,6 +1,6 @@
 __author__ = 'Jack'
 __author__= 'chrisgraff'
-__author = 'Bennett'
+__author__ = 'Bennett'
 
 import requests
 from lxml import html
@@ -22,12 +22,7 @@ def get_celeb_gender(imdb_celeb_bio):
     :return: (string or None) 'boy' or 'girl' or None
     :comment: parse celeb's imdb page bio for masculine/feminine pronouns to determine gender.
     """
-    TEST_TEXT = 'Jonny Weston was born in 1988 and was raised in Charleston, South Carolina. After turning 18, ' \
-           'he went to the University of South Carolina in Columbia, SC, where he took a theatre class, fell in love' \
-           ' with acting and decided to pursue it. He is probably most known for his part as Jay Moriarty in' \
-           ' Chasing Mavericks (2013).'
-
-    celeb_bio = TEST_TEXT.lower().split()
+    celeb_bio = imdb_celeb_bio.lower().split()
     boy_pronouns = ('he', 'him')
     girl_pronouns = ('she', 'her')
     is_boy = False
