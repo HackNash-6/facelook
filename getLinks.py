@@ -8,6 +8,7 @@ import lxml
 
 import GetNames
 import GetPicture
+import getPhotos
 
 
 NAMES_LIST = GetNames.get_names()
@@ -27,6 +28,8 @@ def get_celeb_page(name):
     :param name: (string) A celebrity name
     :return: (string) url of celeb's IMDB page
     """
+    #TODO: Soon to be deprecated by GetNames.get_imdb_links()
+    
     BASE_URL = "http://www.imdb.com/search/name?name="
     BAD_LAST_NAMES = ['Knowles', 'Kardashian', 'Saldana', 'Dion', 'Cruz', 'Zellweger', 'Minnillo']
     BAD_FIRST_NAMES = ['Gisele']
@@ -75,7 +78,7 @@ def deliver_links():
         if v == [] or v is None:
             del links_dict[k]
 
-    with open('celeb_img_links.json', 'w') as outfile:
+    with open('new_celeb_img_links.json', 'w') as outfile:
         json.dump(links_dict, outfile, indent=4)
 
 
