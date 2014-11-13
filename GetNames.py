@@ -1,6 +1,4 @@
-__author__ = 'Jack'
-__author__= 'chrisgraff'
-__author__ = 'Bennett'
+__author__ = ['Jack', 'chrisgraff', 'Bennett']
 
 import requests
 import time
@@ -37,21 +35,22 @@ def get_celeb_gender(imdb_celeb_bio):
         return 'girl'
     return None
 
-def get_imdb_links(start_page_num, stop_page_num):
+def get_imdb_links(start, stop):
     """
-    :param start_page_num, stop_page_num: (int) range of search pages to search
+    :param start, stop: (int) how many celebs do you want?
     :returns: (dict) {"celeb name": "celeb imdb page url"}
     :comment: returns all celebs found on imdb.com search results'
+    :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
     """
     celeb_dict = {}
-    invalid_celebs = ['', u'sa\xafd taghmaoui',]
+
+    invalid_celebs = ['', 'Usher'] # Error causing names go here
     IMDB_SEED = "http://www.imdb.com/search/name?gender=male,female&ref_nv_cel_m_3&start="
 
-    search_result_pages = ['{}{}'.format(IMDB_SEED, x) for x in xrange(start_page_num, stop_page_num, 50)]
+    search_result_pages = ['{}{}'.format(IMDB_SEED, x) for x in xrange(start, stop, 50)]
 
     for page in search_result_pages:
         celeb_page_tree = get_page(page)
-        print('retrieving {}'.format(celeb_page_tree))
         celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') #list of all celeb objects on page
 
         for celeb in celeb_objects:
@@ -67,35 +66,38 @@ def filter_unicode(name):
     :param name: (unicode string) word/name that may or may not contain unicode chars
     :return: (string) same as input but with unicode chars replaced (if none...returns input)
     """
-    def get_char(c):
-        if char in [u'\xc3', u'\xe3', '.']: # \xe3 is 'seen' within u'Ren\xc3\xa9e Zellweger'
-            return ''
-        elif char in [u'\xa4', u'\xa5', u'\xa1', u'\xe0', u'\xe1', u'\xe2', u'\xe4', u'\xe5']:
-            return 'a'
-        elif char in [u'\xe9', u'\xe8', u'\xa8', u'\xeb', u'\xea', u'\xa9', u'\xab']:
-            return 'e'
-        elif char in [u'\xec', u'\xed', u'\xad', u'\xee', u'\xef' u'\xaf']:
-            return 'i'
-        elif char in [u'\xb8', u'\xb3', u'\xf2', u'\xf3', u'\xf4', u'\xf5', u'\xf6']:
-            return 'o'
-        elif char in [u'\xf9', u'\xfa', u'\xfb', u'\xfc', u'\xbc']:
-            return 'u'
-        elif char in [u'\xf1', u'\xb1']:
-            return 'n'
-        elif char in [u'\u0155']:
-            return 'r'
-        elif char in [u'\xa7']:
-            return 'c'
-        elif char in [u'\xbf']:
-            return 'y'
-        else:
-            return c
+    def fix_char(letter):
+        """
+        :param letter: (string) a single char that may or may not trigger a unicode error.
+        :return: (string) the ascii equiv found in uni_dict...else the original char
+        """
+        uni_dict = {
+            u'\xc3': '',  u'\xe3': '', '.': '',
+            u'\xa1': 'a', u'\xa4': 'a', u'\xa5': 'a',
+            u'\xe0': 'a', u'\xe1': 'a', u'\xe2': 'a', u'\xe4': 'a',  u'\xe5': 'a',
+            u'\xa8': 'e', u'\xa9': 'e', u'\xab': 'e',
+            u'\xe8': 'e', u'\xe9': 'e', u'\xea': 'e', u'\xeb': 'e',
+            u'\xad': 'i', u'\xaf': 'i',
+            u'\xec': 'i', u'\xed': 'i', u'\xee': 'i', u'\xef': 'i',
+            u'\xb3': 'o', u'\xb8': 'o',
+            u'\xf2': 'o', u'\xf3': 'o', u'\xf4': 'o', u'\xf5': 'o', u'\xf6': 'o',
+            u'\xba': 'u', u'\xbc': 'u',
+            u'\xf9': 'u', u'\xfa': 'u', u'\xfb': 'u', u'\xfc': 'u',
+            u'\xf1': 'n', u'\xb1': 'n', u'\xa7': 'c', u'\xbf': 'y', u'\u0155': 'u'
+        }
+
+        try:
+            return uni_dict[letter]
+        except KeyError:
+            return letter
+
 
     result = ''
-    for char in name.lower():
-        result += (get_char(char))
+    for c in name.lower():
+        result += (fix_char(c))
 
     return result
+
 
 def test_filter_unicode():
     uni_list = [u'Ren\xc3\xa9e Zellweger', u'Chlo\xc3\xab Grace Moretz', u'Ingrid Bols\xc3\xb8 Berdal',
@@ -135,6 +137,8 @@ def test_filter_unicode():
             #input_array.append(stuff.text_content())
 
     #return input_array
+
+
 
 #print(get_imdb_links(1, 2))
 #print(test_filter_unicode())
