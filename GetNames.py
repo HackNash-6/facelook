@@ -8,17 +8,46 @@ from lxml import html
 def get_page(url):
     """
     :param url: (string)
-    :return: html of given page
+    :return: (obj) html tree of given page
+    :ref lxml: http://lxml.de/lxmlhtml.html
     """
     page = requests.get(url).text
     return html.fromstring(page)
 
 
-def get_celeb_gender(imdb_celeb_bio):
+def get_single_imdb_page(name):
     """
-    :param imdb_celeb_bio: (string) html of a celeb's imdb page
-    :return: (string or None) 'boy' or 'girl' or None
-    :comment: parse celeb's imdb page bio for masculine/feminine pronouns to determine gender.
+    :param name: (string) A celeb name
+    :return: (string) relative url of celeb's imdb page: '/name/nm0000126'
+    """
+    BASE_URL = "http://www.imdb.com/find?q="
+    URL_PARAMS = "&&s=nm&&exact=true&ref_=fn_nm_ex"
+    name_str = '+'.join(name.split())
+    search_result_page = BASE_URL + name_str + URL_PARAMS
+    tree = get_page(search_result_page)
+    result = tree.xpath('//td[@class="primary_photo"]/a')[0] #grab the first result on the page
+    celeb_id = result.attrib['href'].split('/')[2]
+    return '/name/{}/'.format(celeb_id)
+
+
+
+def get_celeb_bio(name):
+    """
+    :param name: (string) a celeb name
+    :return: (string) bio from celeb's imdb page
+    """
+    celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(name))
+    tree = get_page(celeb_link)
+    bio = tree.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
+    return ''.join(bio).strip('\n')
+
+
+
+def celeb_is_girl(imdb_celeb_bio):
+    """
+    :param imdb_celeb_bio: (string) bio from celeb's imdb page
+    :return: (Boolean) True if feminine pronouns present, False if masculine...or None if neither/both present
+    :comment: parse celeb's imdb page bio for masculine/feminine pronouns.
     """
     celeb_bio = imdb_celeb_bio.lower().split()
     boy_pronouns = ('he', 'him')
@@ -30,9 +59,9 @@ def get_celeb_gender(imdb_celeb_bio):
         if (word in girl_pronouns): is_girl = True
 
     if is_boy and not is_girl:
-        return 'boy'
+        return False
     elif is_girl and not is_boy:
-        return 'girl'
+        return True
     return None
 
 def get_imdb_links(start, stop):
@@ -51,7 +80,7 @@ def get_imdb_links(start, stop):
 
     for page in search_result_pages:
         celeb_page_tree = get_page(page)
-        celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') #list of all celeb objects on page
+        celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') # A list of all celeb objects on page
 
         for celeb in celeb_objects:
             if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
@@ -142,6 +171,7 @@ def test_filter_unicode():
 
 #print(get_imdb_links(1, 2))
 #print(test_filter_unicode())
+#print(get_celeb_bio('Ronald Reagan'))
 
 if __name__ == '__main__':
     pass
