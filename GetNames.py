@@ -12,8 +12,8 @@ def get_page(url):
     :param url: (string)
     :return: html of given page
     """
-    page = requests.get(url)
-    return html.fromstring(page.text)
+    page = requests.get(url).text
+    return html.fromstring(page)
 
 
 def get_celeb_gender(imdb_celeb_bio):
@@ -50,15 +50,14 @@ def get_imdb_links(start_page_num, stop_page_num):
     search_result_pages = ['{}{}'.format(IMDB_SEED, x) for x in xrange(start_page_num, stop_page_num, 50)]
 
     for page in search_result_pages:
-        celeb_page = requests.get(page).text
-        celeb_page_tree = html.fromstring(celeb_page)
+        celeb_page_tree = get_page(page)
         print('retrieving {}'.format(celeb_page_tree))
         celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') #list of all celeb objects on page
 
         for celeb in celeb_objects:
             if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
                 celeb_dict[filter_unicode(celeb.attrib['title'])] = celeb.attrib['href'] #.attrib gives us the goods!
-                ('saving entry for {}'.format(celeb.attrib))
+                print('saving entry for {}'.format(celeb.attrib))
         time.sleep(.5)
     return celeb_dict
 
@@ -137,7 +136,7 @@ def test_filter_unicode():
 
     #return input_array
 
-#print(get_imdb_links(5001, 6001))
+#print(get_imdb_links(1, 2))
 #print(test_filter_unicode())
 
 if __name__ == '__main__':
