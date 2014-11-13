@@ -4,11 +4,14 @@ import time
 import json
 import subprocess
 
+# TODO: This is in process of being refactored and consolidated with getLinks, GetPicture and GetNames
+# TODO: Code is in a non-working state as of 11/11/14
+
 
 def get_links_from_json(json_file):
     """
     :param json_file: (string) 'whatever.json'
-    :return: (dict) same as input
+    :return: (dict) converted data from json file
     """
     with open(json_file) as json_data:
         data = json.load(json_data)
