@@ -4,7 +4,7 @@ import os
 import cv2
 import numpy as np
 import pandas
-
+import re
 
 def compare_similarity(path):
     return eigen_similarity(path)
@@ -48,6 +48,9 @@ def get_images():
 
     for subdir, dirs, files in os.walk(rootdir):
         for f in files:
+            path = os.path.join(subdir,f)
+            match = re.search(".+1\.jpg$", path)
+            if match:
                 images.append(rootdir + '/' + f)
     return images
 

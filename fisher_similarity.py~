@@ -48,9 +48,6 @@ def get_images():
 
     for subdir, dirs, files in os.walk(rootdir):
         for f in files:
-            path = os.path.join(subdir,f)
-            match = re.search(".+1\.jpg$", path)
-            if match:
                 images.append(rootdir + '/' + f)
     return images
 
