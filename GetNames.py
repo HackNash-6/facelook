@@ -4,6 +4,8 @@ import requests
 import time
 from lxml import html
 
+import GetPicture
+
 
 def get_page(url):
     """
@@ -33,17 +35,19 @@ def get_single_imdb_page(name):
 def get_celeb_bio(name):
     """
     :param name: (string) a celeb name
-    :return: (string) bio from celeb's imdb page
+    :return: (set) bio from celeb's imdb page - set is 2x more efficient for searching vs string
     """
     celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(filter_unicode(name)))
     tree = get_page(celeb_link)
     bio = tree.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
-    return [filter_unicode(word) for word in ''.join(bio).strip('\n').lower().split()]
+    return set([filter_unicode(word) for word in ''.join(bio).strip('\n').lower().split()])
+
+
 
 
 def celeb_is_girl(imdb_celeb_bio):
     """
-    :param imdb_celeb_bio: (string) bio from celeb's imdb page
+    :param imdb_celeb_bio: (set) bio from celeb's imdb page
     :return: (Boolean) True if feminine pronouns present, False if masculine...or None if neither/both present
     :comment: parse celeb's imdb page bio for masculine/feminine pronouns.
     """
@@ -66,14 +70,14 @@ def celeb_is_girl(imdb_celeb_bio):
 
 def get_imdb_links(start, stop):
     """
-    :param start, stop: (int) how many celebs do you want?
+    :param start, stop: (int) how many celebs do you want?  More->less famous via imdb Star-score.
     :returns: (dict) {"celeb name": "celeb imdb page url"}
     :comment: returns all celebs found on imdb.com search results'
     :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
     """
     celeb_dict = {}
 
-    invalid_celebs = ['', 'Usher'] # Error causing names go here
+    invalid_celebs = set(['', 'Usher']) # Error causing names go here
     IMDB_SEED = "http://www.imdb.com/search/name?gender=male,female&ref_nv_cel_m_3&start="
 
     search_result_pages = ['{}{}'.format(IMDB_SEED, x) for x in xrange(start, stop, 50)]
@@ -85,9 +89,10 @@ def get_imdb_links(start, stop):
         for celeb in celeb_objects:
             if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
                 is_girl = celeb_is_girl(get_celeb_bio(celeb.attrib['title']))
-                celeb_dict[filter_unicode(celeb.attrib['title'])] = [celeb.attrib['href'], is_girl]
+                celeb_dict[filter_unicode(celeb.attrib['title'])] = \
+                    [celeb.attrib['href'], GetPicture.get_picture(celeb.attrib['href']), is_girl] # [page, pic, is_girl]
                 print('saving entry for {}'.format(celeb.attrib))
-            time.sleep(.4)
+            time.sleep(.3)
     return celeb_dict
 
 
@@ -166,6 +171,8 @@ def get_names():
             input_array.append(person.lower())
 
     return input_array
+
+
 
 
 for k, v in get_imdb_links(1,2).items():

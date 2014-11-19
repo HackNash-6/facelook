@@ -11,8 +11,6 @@ import GetPicture
 import getPhotos
 
 
-NAMES_LIST = GetNames.get_names()
-
 
 def getPage(url):
     """
@@ -71,18 +69,33 @@ def deliver_links():
     """
     :return: json file {'celeb_name': 'celeb_img_link'}
     """
-
+    NAMES_LIST = GetNames.get_names()
     links_dict = {name: GetPicture.get_picture(get_celeb_page(name)) for name in NAMES_LIST}
 
     for k, v in links_dict.items():
         if v == [] or v is None:
             del links_dict[k]
 
+    with open('celeb_img_links.json', 'w') as outfile:
+        json.dump(links_dict, outfile, indent=4)
+
+
+def deliver_imdb_links(start, stop):
+    """
+    :param start, stop: (int) range of most->least famous celebs accourding to imdb
+    :return: (file.json) {'celeb_name': ['celeb_page_link', 'celeb_img_link', is_girl (boolean)]
+    """
+    links_dict = GetNames.get_imdb_links(start, stop) # {name: [page_url, pic_url, is_girl]}
+
+    for k, v in links_dict.items():
+        if v == [] or v[1] is None:
+            del links_dict[k]
+
     with open('new_celeb_img_links.json', 'w') as outfile:
         json.dump(links_dict, outfile, indent=4)
 
 
-
+deliver_imdb_links(1, 2)
 
 if __name__ == '__main__':
-    deliver_links()
+    pass

@@ -18,7 +18,7 @@ def get_picture(url):
 
         #get the pic
         celeb_elements = tree.xpath('//img[@id = "name-poster"]/@src')
-        return celeb_elements
+        return celeb_elements[0]
     else:
         return None
 
