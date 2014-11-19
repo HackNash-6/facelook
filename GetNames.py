@@ -20,9 +20,9 @@ def get_single_imdb_page(name):
     :param name: (string) A celeb name
     :return: (string) relative url of celeb's imdb page: '/name/nm0000126'
     """
-    BASE_URL = "http://www.imdb.com/find?q="
-    URL_PARAMS = "&&s=nm&&exact=true&ref_=fn_nm_ex"
-    name_str = '+'.join(name.split())
+    BASE_URL = "http://www.imdb.com/find?ref_=nv_sr_fn&q="
+    URL_PARAMS = "&s=nm"
+    name_str = '+'.join(filter_unicode(name).split())
     search_result_page = BASE_URL + name_str + URL_PARAMS
     tree = get_page(search_result_page)
     result = tree.xpath('//td[@class="primary_photo"]/a')[0] #grab the first result on the page
@@ -30,17 +30,15 @@ def get_single_imdb_page(name):
     return '/name/{}/'.format(celeb_id)
 
 
-
 def get_celeb_bio(name):
     """
     :param name: (string) a celeb name
     :return: (string) bio from celeb's imdb page
     """
-    celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(name))
+    celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(filter_unicode(name)))
     tree = get_page(celeb_link)
     bio = tree.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
-    return ''.join(bio).strip('\n')
-
+    return [filter_unicode(word) for word in ''.join(bio).strip('\n').lower().split()]
 
 
 def celeb_is_girl(imdb_celeb_bio):
@@ -49,20 +47,22 @@ def celeb_is_girl(imdb_celeb_bio):
     :return: (Boolean) True if feminine pronouns present, False if masculine...or None if neither/both present
     :comment: parse celeb's imdb page bio for masculine/feminine pronouns.
     """
-    celeb_bio = imdb_celeb_bio.lower().split()
-    boy_pronouns = ('he', 'him')
+    boy_pronouns = ('he', 'his')
     girl_pronouns = ('she', 'her')
     is_boy = False
     is_girl = False
-    for word in celeb_bio:
-        if (word in boy_pronouns): is_boy = True
-        if (word in girl_pronouns): is_girl = True
+
+    if boy_pronouns[0] in imdb_celeb_bio or boy_pronouns[1] in imdb_celeb_bio:
+        is_boy = True
+    if girl_pronouns[0] in imdb_celeb_bio or girl_pronouns[1] in imdb_celeb_bio:
+        is_girl = True
 
     if is_boy and not is_girl:
         return False
     elif is_girl and not is_boy:
         return True
     return None
+
 
 def get_imdb_links(start, stop):
     """
@@ -84,15 +84,16 @@ def get_imdb_links(start, stop):
 
         for celeb in celeb_objects:
             if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
-                celeb_dict[filter_unicode(celeb.attrib['title'])] = celeb.attrib['href'] #.attrib gives us the goods!
+                is_girl = celeb_is_girl(get_celeb_bio(celeb.attrib['title']))
+                celeb_dict[filter_unicode(celeb.attrib['title'])] = [celeb.attrib['href'], is_girl]
                 print('saving entry for {}'.format(celeb.attrib))
-        time.sleep(.5)
+            time.sleep(.4)
     return celeb_dict
 
 
 def filter_unicode(name):
     """
-    :param name: (unicode string) word/name that may or may not contain unicode chars
+    :param name: (string) word/name that may or may not contain unicode chars
     :return: (string) same as input but with unicode chars replaced (if none...returns input)
     """
     def fix_char(letter):
@@ -142,36 +143,39 @@ def test_filter_unicode():
         print filter_unicode(name)
 
 
-
-#def get_names():
+def get_names():
     #gets names from people.com
     #-------get_names() DEPRECATED since we already have these names & images------###
-    #input_array = []
-    #allNames = requests.get('http://www.people.com/people/celebrities/') # WE ALREADY HAVE THESE
-    #tree = html.fromstring(allNames.text)
+    input_array = []
+    allNames = requests.get('http://www.people.com/people/celebrities/') # WE ALREADY HAVE THESE
+    tree = html.fromstring(allNames.text)
 
     #parse doc for names of celebs
-    #celeb_elements = tree.xpath('//dt[. = "A"]/following-sibling::dd')
-    #celebs_second = tree.xpath('//dt[. = "G"]/following-sibling::dd')
-    #celebs_third = tree.xpath('//dt[. = "L"]/following-sibling::dd')
-    #celebs_fourth = tree.xpath('//dt[. = "R"]/following-sibling::dd')
+    celeb_elements = tree.xpath('//dt[. = "A"]/following-sibling::dd')
+    celebs_second = tree.xpath('//dt[. = "G"]/following-sibling::dd')
+    celebs_third = tree.xpath('//dt[. = "L"]/following-sibling::dd')
+    celebs_fourth = tree.xpath('//dt[. = "R"]/following-sibling::dd')
 
-    #celeb_elements += celebs_second + celebs_third + celebs_fourth
+    celeb_elements += celebs_second + celebs_third + celebs_fourth
 
-    #for stuff in celeb_elements:
-        #person = stuff.text_content()
-        #if ('Usher' in person):
-            #input_array.append(stuff.text_content() + ' Raymond') # Usher in IMDB as 'Usher Raymond'
-        #else:
-            #input_array.append(stuff.text_content())
+    for stuff in celeb_elements:
+        person = stuff.text_content()
+        if ('Usher' in person):
+            input_array.append(person.lower() + ' raymond') # Usher in IMDB as "Usher Raymond"
+        else:
+            input_array.append(person.lower())
 
-    #return input_array
+    return input_array
 
 
+for k, v in get_imdb_links(1,2).items():
+    print('{}: {}'.format(k, v))
 
 #print(get_imdb_links(1, 2))
 #print(test_filter_unicode())
-#print(get_celeb_bio('Ronald Reagan'))
+#print(get_single_imdb_page('Adele'))
+
+
 
 if __name__ == '__main__':
     pass

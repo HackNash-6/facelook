@@ -62,4 +62,5 @@ def test_get_photos(dict_to_be_tested=None):
 
 
 if __name__ == '__main__':
-    get_photos(get_links_from_json('celeb_img_links.json'))
+    pass
+    #get_photos(get_links_from_json('celeb_img_links.json'))
