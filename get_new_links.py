@@ -124,7 +124,7 @@ def get_picture(html_tree):
     try:
         return html_tree.xpath('//img[@id = "name-poster"]/@src')[0]
     except IndexError:
-        print('No picture found for {}'.format(' '.join(html_tree.findtext('head/title').split()[:2])))
+        print('No picture found for {}'.format(filter_unicode(' '.join(html_tree.findtext('head/title').split()[:2]))))
         pass
 
 
@@ -172,8 +172,8 @@ def deliver_imdb_links(start, stop, filename):
     with open(filename, 'w') as outfile:
         json.dump(links_dict, outfile, indent=4)
 
-#TODO: grab the next 1000 celebs (4001-5000)
-#deliver_imdb_links(4001, 5000, 'new_celeb_img_links5.json')
+#TODO: grab the next 1000 celebs
+deliver_imdb_links(9001, 10000, 'new_celeb_img_links10.json')
 
 
 if __name__ == '__main__':
