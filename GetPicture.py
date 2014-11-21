@@ -16,6 +16,7 @@ def get_picture(url):
 
         tree = html.fromstring(allNames.text)
 
+
         #get the pic
         celeb_elements = tree.xpath('//img[@id = "name-poster"]/@src')
         return celeb_elements[0]
@@ -23,7 +24,7 @@ def get_picture(url):
         return None
 
 
-
+#print(get_picture('/name/nm1297015/'))
 
 if __name__ == '__main__':
     pass

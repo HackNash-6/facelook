@@ -4,8 +4,9 @@ import time
 import json
 import subprocess
 
-# TODO: This is in process of being refactored and consolidated with getLinks, GetPicture and GetNames
-# TODO: Code is in a non-working state as of 11/11/14
+
+# TODO: Write a function to check whether celeb photo already exists
+# TODO: save img to gender-specific dir based on the last val in celeb listing - {name: [celeb_page, img_url, is_girl]}
 
 
 def get_links_from_json(json_file):
@@ -20,14 +21,14 @@ def get_links_from_json(json_file):
 
 def get_photos(celeb_dict):
     """
-    :param celeb_dict: (dict) {'celeb name': 'url of celeb photo'}
+    :param celeb_dict: (dict) {'name': ['celeb page url (eg /name/nm1234)', 'celeb img url (eg http://..)', is_girl]}
     :return photos_dict: (dict) {'celeb name': 'celeb_name.jpg'}
     """
     photos_dict = {}
     for key, elem in celeb_dict.items():
         celeb_name = '_'.join(key.lower().split(' ')) + '.jpg'
         photos_dict[key] = celeb_name
-        subprocess.check_output(['wget', elem, '-O', './images/{}'.format(photos_dict[key])]) #download the file
+        subprocess.check_output(['wget', elem[1], '-O', './images/{}'.format(photos_dict[key])]) #download the file
         time.sleep(.6)
         print('sleeping after downloading {}'.format(key))
 
