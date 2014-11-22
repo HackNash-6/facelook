@@ -83,7 +83,7 @@ def filter_unicode(name):
             u'\xe8': 'e', u'\xe9': 'e', u'\xea': 'e', u'\xeb': 'e',
             u'\xad': 'i', u'\xaf': 'i',
             u'\xec': 'i', u'\xed': 'i', u'\xee': 'i', u'\xef': 'i',
-            u'\xb3': 'o', u'\xb8': 'o',
+            u'\xb3': 'o', u'\xb8': 'o', u'\xb6': 'o',
             u'\xf2': 'o', u'\xf3': 'o', u'\xf4': 'o', u'\xf5': 'o', u'\xf6': 'o',
             u'\xba': 'u', u'\xbc': 'u',
             u'\xf9': 'u', u'\xfa': 'u', u'\xfb': 'u', u'\xfc': 'u',
@@ -111,7 +111,7 @@ def test_filter_unicode():
             u'Nicole Mu\xc3\xb1oz', u'Birgitte Hjort S\xc3\xb8rensen', u'Gisele B\xc3\xbcndchen',
             u'Oscar Nu\xc3\xb1ez', u'Astrid Berg\xc3\xa8s-Frisbey', u'Guillermo D\xc3\xadaz',
             u'Khlo\xc3\xa9 Kardashian', u'Fran\xc3\xa7ois Arnaud', u'Sa\xc3\xafd Taghmaoui',
-            u'Stef\xc3\xa1n Karl Stef\xc3\xa1nsson']
+            u'Stef\xc3\xa1n Karl Stef\xc3\xa1nsson', u'Elisabeth R\xb6hm']
 
     for name in uni_list:
         print filter_unicode(name)
@@ -178,7 +178,6 @@ def deliver_imdb_links(start, stop, filename):
 
 # Uncomment to get a range of celebs (int1, int2, 'filename_to_be_saved.json')
 #deliver_imdb_links(10001, 11000, 'new_celeb_img_links11.json')
-
 
 if __name__ == '__main__':
     pass
