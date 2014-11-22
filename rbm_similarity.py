@@ -30,6 +30,7 @@ def compare_similarity(path):
 
 
 def rbm_similarity(path):
+    global model
 
     if model is None:
         images = []
@@ -72,6 +73,7 @@ def get_thumbnail(image, size=(4, 4), greyscale=False):
 
 
 def eigenfaces(images, labels):
+    global model
     testing = []
     tLabels = np.asarray(labels, dtype=np.int32)
     #  for x in images:
@@ -126,6 +128,7 @@ def train_new(path):
 
 
 def train(image_matrix, images):
+    global model
 
     X = np.asarray(image_matrix, 'float32')
     Y = np.array(X.shape)
@@ -142,7 +145,6 @@ def train(image_matrix, images):
         x_new = rbm.fit(X[i])
         y_new[i] = x_new.components_
 
-    global model
     model = {
         'matrix': y_new,
         'images': images
