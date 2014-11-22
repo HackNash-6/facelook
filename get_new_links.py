@@ -3,9 +3,10 @@ __author__ = ['Jack', 'chrisgraff', 'Bennett']
 import time
 import requests
 import json
+import logging
 from lxml import html
 
-#TODO: get_new_links.py --- replaces getLinks.py, GetNames.py, GetPicture.py
+#get_new_links.py --- replaces getLinks.py, GetNames.py, GetPicture.py
 
 def get_page(url):
     """
@@ -121,10 +122,12 @@ def get_picture(html_tree):
     :param html_tree: (obj) html tree object of a celeb's imdb page
     :return: url (string) url of the profile pic on celeb's imdb page
     """
+    logging.basicConfig(filename='celeb_errors.log', format='%(asctime)s %(message)s', level=logging.WARNING)
     try:
         return html_tree.xpath('//img[@id = "name-poster"]/@src')[0]
     except IndexError:
-        print('No picture found for {}'.format(filter_unicode(' '.join(html_tree.findtext('head/title').split()[:2]))))
+        celeb_name = filter_unicode(' '.join(html_tree.findtext('head/title').split()[:2]))
+        logging.warning('No image for {}'.format(celeb_name))
         pass
 
 
