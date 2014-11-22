@@ -131,7 +131,7 @@ def get_picture(html_tree):
 def get_imdb_links(start, stop):
     """
     :param start, stop: (int) how many celebs do you want?  More->less famous via imdb Star-score.
-    :returns: (dict) {"celeb name": "celeb imdb page url"}
+    :returns: (dict) {"celeb name": ['celeb_imdb_url', 'celeb_img_url', is_girl]}
     :comment: returns all celebs found on imdb.com search results'
     :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
     """
@@ -172,8 +172,9 @@ def deliver_imdb_links(start, stop, filename):
     with open(filename, 'w') as outfile:
         json.dump(links_dict, outfile, indent=4)
 
-#TODO: grab the next 1000 celebs
-deliver_imdb_links(9001, 10000, 'new_celeb_img_links10.json')
+
+# Uncomment to get a range of celebs (int1, int2, 'filename_to_be_saved.json')
+#deliver_imdb_links(10001, 11000, 'new_celeb_img_links11.json')
 
 
 if __name__ == '__main__':
