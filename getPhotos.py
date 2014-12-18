@@ -56,8 +56,6 @@ def get_photos(celeb_dict):
             print('sleeping after downloading {}'.format(key))
 
 
-
-
 def test_get_photos(dict_to_be_tested=None):
     """
     :param dict_to_be_tested: (dict)
