@@ -1,11 +1,12 @@
 __author__ = ['Jack', 'chrisgraff', 'Bennett']
 
-import requests
 import time
+import requests
+import json
+import logging
 from lxml import html
 
-import GetPicture
-
+#get_new_links.py --- replaces getLinks.py, GetNames.py, GetPicture.py
 
 def get_page(url):
     """
@@ -22,27 +23,23 @@ def get_single_imdb_page(name):
     :param name: (string) A celeb name
     :return: (string) relative url of celeb's imdb page: '/name/nm0000126'
     """
-    BASE_URL = "http://www.imdb.com/find?ref_=nv_sr_fn&q="
-    URL_PARAMS = "&s=nm"
+    base_url = "http://www.imdb.com/find?ref_=nv_sr_fn&q="
+    url_params = "&s=nm"
     name_str = '+'.join(filter_unicode(name).split())
-    search_result_page = BASE_URL + name_str + URL_PARAMS
+    search_result_page = base_url + name_str + url_params
     tree = get_page(search_result_page)
     result = tree.xpath('//td[@class="primary_photo"]/a')[0] #grab the first result on the page
     celeb_id = result.attrib['href'].split('/')[2]
     return '/name/{}/'.format(celeb_id)
 
 
-def get_celeb_bio(name):
+def get_celeb_bio(tree_obj):
     """
-    :param name: (string) a celeb name
+    :param tree_obj: (object) html tree of celeb's imdb page
     :return: (set) bio from celeb's imdb page - set is 2x more efficient for searching vs string
     """
-    celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(filter_unicode(name)))
-    tree = get_page(celeb_link)
-    bio = tree.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
+    bio = tree_obj.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
     return set([filter_unicode(word) for word in ''.join(bio).strip('\n').lower().split()])
-
-
 
 
 def celeb_is_girl(imdb_celeb_bio):
@@ -68,34 +65,6 @@ def celeb_is_girl(imdb_celeb_bio):
     return None
 
 
-def get_imdb_links(start, stop):
-    """
-    :param start, stop: (int) how many celebs do you want?  More->less famous via imdb Star-score.
-    :returns: (dict) {"celeb name": "celeb imdb page url"}
-    :comment: returns all celebs found on imdb.com search results'
-    :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
-    """
-    celeb_dict = {}
-
-    invalid_celebs = set(['', 'Usher']) # Error causing names go here
-    IMDB_SEED = "http://www.imdb.com/search/name?gender=male,female&ref_nv_cel_m_3&start="
-
-    search_result_pages = ['{}{}'.format(IMDB_SEED, x) for x in xrange(start, stop, 50)]
-
-    for page in search_result_pages:
-        celeb_page_tree = get_page(page)
-        celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') # A list of all celeb objects on page
-
-        for celeb in celeb_objects:
-            if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
-                is_girl = celeb_is_girl(get_celeb_bio(celeb.attrib['title']))
-                celeb_dict[filter_unicode(celeb.attrib['title'])] = \
-                    [celeb.attrib['href'], GetPicture.get_picture(celeb.attrib['href']), is_girl] # [page, pic, is_girl]
-                print('saving entry for {}'.format(celeb.attrib))
-            time.sleep(.3)
-    return celeb_dict
-
-
 def filter_unicode(name):
     """
     :param name: (string) word/name that may or may not contain unicode chars
@@ -114,7 +83,7 @@ def filter_unicode(name):
             u'\xe8': 'e', u'\xe9': 'e', u'\xea': 'e', u'\xeb': 'e',
             u'\xad': 'i', u'\xaf': 'i',
             u'\xec': 'i', u'\xed': 'i', u'\xee': 'i', u'\xef': 'i',
-            u'\xb3': 'o', u'\xb8': 'o',
+            u'\xb3': 'o', u'\xb8': 'o', u'\xb6': 'o',
             u'\xf2': 'o', u'\xf3': 'o', u'\xf4': 'o', u'\xf5': 'o', u'\xf6': 'o',
             u'\xba': 'u', u'\xbc': 'u',
             u'\xf9': 'u', u'\xfa': 'u', u'\xfb': 'u', u'\xfc': 'u',
@@ -142,51 +111,73 @@ def test_filter_unicode():
             u'Nicole Mu\xc3\xb1oz', u'Birgitte Hjort S\xc3\xb8rensen', u'Gisele B\xc3\xbcndchen',
             u'Oscar Nu\xc3\xb1ez', u'Astrid Berg\xc3\xa8s-Frisbey', u'Guillermo D\xc3\xadaz',
             u'Khlo\xc3\xa9 Kardashian', u'Fran\xc3\xa7ois Arnaud', u'Sa\xc3\xafd Taghmaoui',
-            u'Stef\xc3\xa1n Karl Stef\xc3\xa1nsson']
+            u'Stef\xc3\xa1n Karl Stef\xc3\xa1nsson', u'Elisabeth R\xb6hm']
 
     for name in uni_list:
         print filter_unicode(name)
 
 
-def get_names():
-    #gets names from people.com
-    #-------get_names() DEPRECATED since we already have these names & images------###
-    input_array = []
-
-    tree = get_page('http://www.people.com/people/celebrities/')
-
-    #parse doc for names of celebs
-    celeb_elements = tree.xpath('//dt[. = "A"]/following-sibling::dd')
-    celebs_second = tree.xpath('//dt[. = "G"]/following-sibling::dd')
-    celebs_third = tree.xpath('//dt[. = "L"]/following-sibling::dd')
-    celebs_fourth = tree.xpath('//dt[. = "R"]/following-sibling::dd')
-
-    celeb_elements += celebs_second + celebs_third + celebs_fourth
-
-    for stuff in celeb_elements:
-        person = stuff.text_content()
-        if ('Usher' in person):
-            input_array.append(person.lower() + ' raymond') # Usher in IMDB as "Usher Raymond"
-        else:
-            input_array.append(person.lower())
-
-    return input_array
+def get_picture(html_tree):
+    """
+    :param html_tree: (obj) html tree object of a celeb's imdb page
+    :return: url (string) url of the profile pic on celeb's imdb page
+    """
+    logging.basicConfig(filename='celeb_errors.log', format='%(asctime)s %(message)s', level=logging.WARNING)
+    try:
+        return html_tree.xpath('//img[@id = "name-poster"]/@src')[0]
+    except IndexError:
+        celeb_name = filter_unicode(' '.join(html_tree.findtext('head/title').split()[:2]))
+        logging.warning('No image for {}'.format(celeb_name))
+        pass
 
 
+def get_imdb_links(start, stop):
+    """
+    :param start, stop: (int) how many celebs do you want?  More->less famous via imdb Star-score.
+    :returns: (dict) {"celeb name": ['celeb_imdb_url', 'celeb_img_url', is_girl]}
+    :comment: returns all celebs found on imdb.com search results'
+    :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
+    """
+    celeb_dict = {}
+
+    invalid_celebs = {'', 'Usher'} # Error causing names reside in this set literal
+    imdb_seed = "http://www.imdb.com/search/name?gender=male,female&ref_nv_cel_m_3&start="
+    celeb_page_seed = "http://www.imdb.com"
+
+    search_result_pages = ['{}{}'.format(imdb_seed, x) for x in xrange(start, stop, 50)]
+
+    for page in search_result_pages:
+        celeb_page_tree = get_page(page)
+        celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') # A list of all celeb objects on page
+
+        for celeb in celeb_objects:
+            if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
+                celeb_page = get_page(celeb_page_seed + celeb.attrib['href'])
+                is_girl = celeb_is_girl(get_celeb_bio(celeb_page))
+                celeb_dict[filter_unicode(celeb.attrib['title'])] = \
+                    [celeb.attrib['href'], get_picture(celeb_page), is_girl] # [page, pic, is_girl]
+                print('saving entry for {}'.format(celeb.attrib))
+            time.sleep(.4)
+    return celeb_dict
 
 
-#for k, v in get_imdb_links(1,2).items():
-    #print('{}: {}'.format(k, v))
+def deliver_imdb_links(start, stop, filename):
+    """
+    :param start, stop, filename: (ints, str) range of most->least famous according to imdb, filename to be saved
+    :return: (file.json) {'celeb_name': ['celeb_page_link', 'celeb_img_link', is_girl (boolean)]
+    """
+    links_dict = get_imdb_links(start, stop) # {name: [page_url, pic_url, is_girl]}
 
-#print(get_imdb_links(1, 2))
-#print(test_filter_unicode())
-#print(get_single_imdb_page('Adele'))
+    for k, v in links_dict.items():
+        if v == [] or v[1] is None:
+            del links_dict[k] #celebs without an img are deleted
+
+    with open(filename, 'w') as outfile:
+        json.dump(links_dict, outfile, indent=4)
 
 
+# Uncomment to get a range of celebs (int1, int2, 'filename_to_be_saved.json')
+#deliver_imdb_links(10001, 11000, 'new_celeb_img_links11.json')
 
 if __name__ == '__main__':
     pass
-
-
-
-
