@@ -3,83 +3,200 @@ __author__ = 'chrisgraff'
 import time
 import requests
 import json
-import lxml
+from lxml import html
 
 
 import GetNames
-import GetPicture
+#import getPhotos
 
 
-NAMES_LIST = GetNames.get_names()
 
-
-def getPage(url):
+def get_page(url):
     """
-    :param url: (string) url of page to be scraped
-    :returns: (string) html of scraped page
+    :param url: (string)
+    :return: (obj) html tree of given page
+    :ref lxml: http://lxml.de/lxmlhtml.html
     """
-    r = requests.get(url)
-    return r.text
+    page = requests.get(url).text
+    return html.fromstring(page)
+
+#########
+def get_single_imdb_page(name):
+    """
+    :param name: (string) A celeb name
+    :return: (string) relative url of celeb's imdb page: '/name/nm0000126'
+    """
+    base_url = "http://www.imdb.com/find?ref_=nv_sr_fn&q="
+    url_params = "&s=nm"
+    name_str = '+'.join(filter_unicode(name).split())
+    search_result_page = base_url + name_str + url_params
+    tree = get_page(search_result_page)
+    result = tree.xpath('//td[@class="primary_photo"]/a')[0] #grab the first result on the page
+    celeb_id = result.attrib['href'].split('/')[2]
+    return '/name/{}/'.format(celeb_id)
 
 
-def get_celeb_page(name):
+def get_celeb_bio(name):
     """
-    :param name: (string) A celebrity name
-    :return: (string) url of celeb's IMDB page
+    :param name: (string) a celeb name
+    :return: (set) bio from celeb's imdb page - set is 2x more efficient for searching vs string
     """
-    BASE_URL = "http://www.imdb.com/search/name?name="
-    BAD_LAST_NAMES = ['Knowles', 'Kardashian', 'Saldana', 'Dion', 'Cruz', 'Zellweger', 'Minnillo']
-    BAD_FIRST_NAMES = ['Gisele']
-    name_list = name.split(' ')
-    if len(name_list) > 1 and (name_list[1] in BAD_LAST_NAMES or name_list[0] in BAD_FIRST_NAMES):
+    celeb_link = 'http://www.imdb.com{}'.format(get_single_imdb_page(filter_unicode(name)))
+    tree = get_page(celeb_link)
+    bio = tree.xpath('//div[@class="name-trivia-bio-text"]/div/text()')
+    return set([filter_unicode(word) for word in ''.join(bio).strip('\n').lower().split()])
+
+
+
+
+def celeb_is_girl(imdb_celeb_bio):
+    """
+    :param imdb_celeb_bio: (set) bio from celeb's imdb page
+    :return: (Boolean) True if feminine pronouns present, False if masculine...or None if neither/both present
+    :comment: parse celeb's imdb page bio for masculine/feminine pronouns.
+    """
+    boy_pronouns = ('he', 'his')
+    girl_pronouns = ('she', 'her')
+    is_boy = False
+    is_girl = False
+
+    if boy_pronouns[0] in imdb_celeb_bio or boy_pronouns[1] in imdb_celeb_bio:
+        is_boy = True
+    if girl_pronouns[0] in imdb_celeb_bio or girl_pronouns[1] in imdb_celeb_bio:
+        is_girl = True
+
+    if is_boy and not is_girl:
+        return False
+    elif is_girl and not is_boy:
+        return True
+    return None
+
+
+def get_imdb_links(start, stop):
+    """
+    :param start, stop: (int) how many celebs do you want?  More->less famous via imdb Star-score.
+    :returns: (dict) {"celeb name": "celeb imdb page url"}
+    :comment: returns all celebs found on imdb.com search results'
+    :ref .attrib: https://docs.python.org/3.1/library/xml.etree.elementtree.html#the-element-interface
+    """
+    celeb_dict = {}
+
+    invalid_celebs = {'', 'Usher'} # Error causing names reside in this set literal
+    imdb_seed = "http://www.imdb.com/search/name?gender=male,female&ref_nv_cel_m_3&start="
+
+    search_result_pages = ['{}{}'.format(imdb_seed, x) for x in xrange(start, stop, 50)]
+
+    for page in search_result_pages:
+        celeb_page_tree = get_page(page)
+        celeb_objects = celeb_page_tree.xpath('//td[@class="image"]/a') # A list of all celeb objects on page
+
+        for celeb in celeb_objects:
+            if filter_unicode(celeb.attrib['title']) not in invalid_celebs:
+                is_girl = celeb_is_girl(get_celeb_bio(celeb.attrib['title']))
+                celeb_dict[filter_unicode(celeb.attrib['title'])] = \
+                    [celeb.attrib['href'], get_picture(celeb.attrib['href']), is_girl] # [page, pic, is_girl]
+                print('saving entry for {}'.format(celeb.attrib))
+            time.sleep(.3)
+    return celeb_dict
+
+
+def filter_unicode(name):
+    """
+    :param name: (string) word/name that may or may not contain unicode chars
+    :return: (string) same as input but with unicode chars replaced (if none...returns input)
+    """
+    def fix_char(letter):
+        """
+        :param letter: (string) a single char that may or may not trigger a unicode error.
+        :return: (string) the ascii equiv found in uni_dict...else the original char
+        """
+        uni_dict = {
+            u'\xc3': '',  u'\xe3': '', '.': '',
+            u'\xa1': 'a', u'\xa4': 'a', u'\xa5': 'a',
+            u'\xe0': 'a', u'\xe1': 'a', u'\xe2': 'a', u'\xe4': 'a',  u'\xe5': 'a',
+            u'\xa8': 'e', u'\xa9': 'e', u'\xab': 'e',
+            u'\xe8': 'e', u'\xe9': 'e', u'\xea': 'e', u'\xeb': 'e',
+            u'\xad': 'i', u'\xaf': 'i',
+            u'\xec': 'i', u'\xed': 'i', u'\xee': 'i', u'\xef': 'i',
+            u'\xb3': 'o', u'\xb8': 'o',
+            u'\xf2': 'o', u'\xf3': 'o', u'\xf4': 'o', u'\xf5': 'o', u'\xf6': 'o',
+            u'\xba': 'u', u'\xbc': 'u',
+            u'\xf9': 'u', u'\xfa': 'u', u'\xfb': 'u', u'\xfc': 'u',
+            u'\xf1': 'n', u'\xb1': 'n', u'\xa7': 'c', u'\xbf': 'y', u'\u0155': 'u'
+        }
+
+        try:
+            return uni_dict[letter]
+        except KeyError:
+            return letter
+
+
+    result = ''
+    for c in name.lower():
+        result += (fix_char(c))
+
+    return result
+
+
+def test_filter_unicode():
+    uni_list = [u'Ren\xc3\xa9e Zellweger', u'Chlo\xc3\xab Grace Moretz', u'Ingrid Bols\xc3\xb8 Berdal',
+            u'Ang\xc3\xa9lica Celaya', u'M\xc3\xa4dchen Amick', u'Jenna von O\xc3\xbf', u'Zo\xc3\xab Wanamaker',
+            u'Alejandro Gonz\xc3\xa1lez I\xc3\xb1\xc3\xa1rritu', u'Michael Pe\xc3\xb1a', u'Pen\xc3\xa9lope Cruz',
+            u'Aitana S\xc3\xa1nchez-Gij\xc3\xb3n', u'Magn\xc3\xbas Scheving', u'Stellan Skarsg\xc3\xa5rd',
+            u'Nicole Mu\xc3\xb1oz', u'Birgitte Hjort S\xc3\xb8rensen', u'Gisele B\xc3\xbcndchen',
+            u'Oscar Nu\xc3\xb1ez', u'Astrid Berg\xc3\xa8s-Frisbey', u'Guillermo D\xc3\xadaz',
+            u'Khlo\xc3\xa9 Kardashian', u'Fran\xc3\xa7ois Arnaud', u'Sa\xc3\xafd Taghmaoui',
+            u'Stef\xc3\xa1n Karl Stef\xc3\xa1nsson']
+
+    for name in uni_list:
+        print filter_unicode(name)
+
+
+
+
+
+#########
+def get_picture(url):
+    """
+    :param url: (string) url of an imdb celeb page such as: "http://www.imdb.com/name/nm1297015/"
+    :return: url (string) url of the profile pic on celeb's imdb page
+    """
+    if url:
+        if url[:4] not in ["http", "www."]:
+            url = "{}{}".format("http://www.imdb.com", url)
+
+        tree = get_page(url)
+
+        #get the pic
+        celeb_elements = tree.xpath('//img[@id = "name-poster"]/@src')
+        return celeb_elements[0]
+
+    else:
         return None
-    name_string = '%20'.join(name_list)
-    search_result = BASE_URL + name_string
-
-    search_result_page = getPage(search_result)
-    time.sleep(.4)
-    print('sleeping...after retrieving {}.'.format(name))
-    start_pos = search_result_page.find('title="{}"'.format(name))
-    error_pos = search_result_page.find('No results.')
-    if error_pos != -1:
-        return None
-    search_result_slice = search_result_page[start_pos-30: start_pos-3]
-    celebrity_page_link = "http://www.imdb.com/name/" + search_result_slice.split('/')[-1]
-    return celebrity_page_link
 
 
-def test_get_celeb_page():
-    TEST_NAMES = ['Ashton Kutcher', 'Gwen Stefani', 'Paul Rudd', 'David Hasselhoff',
-                  'Liv Tyler','Tiger Woods', 'Lucy Liu', 'Ryan Seacrest', 'Sally Field',
-                  'Tyra Banks', 'Vince Vaughn', 'Will Smith', 'Katy Perry', 'Kelly Ripa',
-                  'Emma Stone', 'Emma Roberts', 'Julia Roberts', 'Paris Hilton', 'Jon Hamm',
-                  'Bruce Willis', 'Brad Pitt', 'Angelina Jolie', 'George Clooney', 'Tim McGraw',
-                  'Jennifer Lawrence', 'Keith Urban', 'Kenny Chesney', 'Faith Hill',
-                  ]
-
-    print('total number of celebs is: {}'.format(len(TEST_NAMES)))
-
-    celebs = [get_celeb_page(name) for name in TEST_NAMES]
-    for name in celebs:
-        print name, get_celeb_page(name)
 
 
-def deliver_links():
+
+def deliver_imdb_links(start, stop):
     """
-    :return: json file {'celeb_name': 'celeb_img_link'}
+    :param start, stop: (int) range of most->least famous celebs accourding to imdb
+    :return: (file.json) {'celeb_name': ['celeb_page_link', 'celeb_img_link', is_girl (boolean)]
     """
-
-    links_dict = {name: GetPicture.get_picture(get_celeb_page(name)) for name in NAMES_LIST}
+    links_dict = GetNames.get_imdb_links(start, stop) # {name: [page_url, pic_url, is_girl]}
 
     for k, v in links_dict.items():
-        if v == [] or v is None:
+        if v == [] or v[1] is None:
             del links_dict[k]
 
-    with open('celeb_img_links.json', 'w') as outfile:
+    with open('new_celeb_img_links1.json', 'w') as outfile:
         json.dump(links_dict, outfile, indent=4)
 
 
+#deliver_imdb_links(1, 2)
 
+#print(get_celeb_bio('Valerie Bertinelli'))
+#print(celeb_is_girl(get_celeb_bio('Valerie Bertinelli')))
 
 if __name__ == '__main__':
-    deliver_links()
+    pass
